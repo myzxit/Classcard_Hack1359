@@ -19,7 +19,7 @@ def word_get(driver, num_d) -> list:
         ).text
         # 원본 그대로 저장 (구분자/공백 제거하지 않음)
 
-    print("[DEBUG] 저장된 영어 단어 리스트:", da_e)
+    # print("[DEBUG] 저장된 영어 단어 리스트:", da_e)
 
     try:
         for i in range(1, num_d):
