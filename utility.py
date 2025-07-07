@@ -62,10 +62,10 @@ def word_get(driver, num_d) -> list:
     da_e_clean = [re.sub(r'[;,\s]+', '', e) for e in da_e]  # 최종적으로 nul문자 없이
     da_k_clean = [re.sub(r'[;,\s]+', '', k) for k in da_k]
     # ...
-    print("[DEBUG] 저장된 영어 단어 리스트:", da_e)
-    print("[DEBUG] 저장된 한글 뜻 리스트:", da_k)
-    print("[DEBUG] 테스트용 영어 단어 리스트:", da_e_clean)
-    print("[DEBUG] 테스트용 한글 뜻 리스트:", da_k_clean)
+    # print("[DEBUG] 저장된 영어 단어 리스트:", da_e)
+    # print("[DEBUG] 저장된 한글 뜻 리스트:", da_k)
+    # print("[DEBUG] 테스트용 영어 단어 리스트:", da_e_clean)
+    # print("[DEBUG] 테스트용 한글 뜻 리스트:", da_k_clean)
     return [da_e, da_k, da_kn, da_kyn, da_ked, da_sd, da_e_clean, da_k_clean]
 
 def chd_wh() -> list[int]:
