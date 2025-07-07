@@ -1,51 +1,66 @@
-# Classcard-Hack
-![dependencies](https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white)![dependencies2](https://img.shields.io/badge/selenium-43B02A?style=for-the-badge&logo=selenium&logoColor=white) ![last commit](https://img.shields.io/github/last-commit/NellLucas/classcard_hack/main?color=red&style=for-the-badge) ![license](https://img.shields.io/github/license/NellLucas/classcard_hack?style=for-the-badge)
-> ✨ Selenium을 활용한 Classcard 학습 자동화 핵입니다.
-## 시연영상
-https://user-images.githubusercontent.com/114709497/210046306-8f532d47-3226-4731-841a-382440e74290.mp4
+# Classcard Hack 사용법 (한글 안내)
 
-## Features / 지원하는 기능들
-- 암기학습(API 변조, 매크로)
-- 리콜학습(API 변조, 매크로)
-- 스펠학습(API 변조, 매크로)
-- 매칭게임(API 변조, 매크로)
-- 테스트학습(매크로)
-- QuizBattle(매크로)
+## 소개
+이 프로젝트는 Classcard(클래스카드) 웹사이트에서 다양한 학습 유형(암기, 리콜, 스펠, 테스트 등)을 자동화/매크로/API 변조 방식으로 빠르게 학습할 수 있도록 도와주는 도구입니다.
 
+> ⚠️ 본 프로그램은 교육/연구/개인 실험 목적으로만 사용하세요. 실제 수업/평가/공식 학습에 악용하지 마세요.
 
-## Getting Started / 어떻게 시작하나요?
+---
 
-### Prerequisites / 선행 조건
+## 주요 기능
+- 다양한 학습 유형 자동화 (암기, 리콜, 스펠, 매칭, 테스트, 퀴즈배틀 등)
+- 여러 세트, 여러 학습 유형을 한 번에 선택하여 순차적으로 학습
+- 단어/뜻 자동 추출 및 처리
+- API 변조를 통한 빠른 학습 처리(일부 유형)
+- 매크로 방식의 실제 자동 클릭/입력 지원
 
-아래 사항들이 설치가 되어있어야합니다.
+---
 
-```
-Chrome, Python3
-```
+## 준비물
+- Python 3
+- Chrome 브라우저
+- ChromeDriver (크롬 버전에 맞는 드라이버 필요)
+- pip 패키지 설치: selenium, beautifulsoup4, requests 등
 
-### Installing / 설치
+### 설치 방법
+1. 저장소를 다운로드/클론합니다.
+2. `requirements.txt`로 필요한 패키지를 설치합니다.
+   ```bash
+   pip install -r requirements.txt
 
-아래 사항들로 현 프로젝트에 관한 모듈들을 설치할 수 있습니다.
+---
 
-```
-pip install -r requirements.txt
-```
+## 실행 방법
+1. 터미널(명령 프롬프트)에서 프로젝트 폴더로 이동합니다.
+2. 아래 명령어로 실행합니다.
+   ```bash
+   python main.py
+   ```
+3. 처음 실행 시 아이디/비밀번호를 입력하면 config.json에 저장됩니다.
+4. 로그인 후, 학습할 **클래스**와 **세트**를 선택합니다.
+   - 여러 세트는 `1,3,5`처럼 콤마로 구분해 입력
+   - 전체는 `all` 입력
+5. 학습 유형을 선택합니다.
+   - 여러 유형을 `8,9,5`처럼 콤마로 구분해 입력 (입력한 순서대로 실행)
+   - 예: `8,9,5` → 리콜, 스펠, 테스트 순서로 실행
+6. 이후 안내에 따라 자동으로 학습이 진행됩니다.
 
-### How to use? / 사용 방법
+---
 
-```
-ID 및 PW 입력 후, 자동화하고자 하는 학습 유형을 선택하시면 됩니다.
-```
+## 주의사항 및 팁
+- **능률보카 단어장** 기준으로 테스트되었습니다. 다른 단어장은 정상 동작을 보장하지 않습니다.
+- 가끔 중간에 몇 개씩 틀릴 수 있습니다. (프로그램/사이트 구조 변경 등)
+- 로그인은 수동으로 직접 하셔야 하며, 로그인 후 엔터를 눌러야 진행됩니다.
+- ChromeDriver 버전이 크롬과 맞지 않으면 실행이 안 될 수 있습니다.
+- 프로그램 사용 중 오류가 발생하면 터미널 메시지를 참고하세요.
+- 본 프로그램은 공식 Classcard와 무관하며, 모든 책임은 사용자에게 있습니다.
 
-## Issues / 이슈
+---
 
-동작에 문제가 있다면 사용환경과 오류코드를 꼭 남겨주세요.
+## 문의/기여
+- 개선 아이디어, 버그 제보, 코드 기여는 Pull Request 또는 Issue로 남겨주세요.
+- 개발자: NellLucas(서재형), Fixed by Sunduck HS Student
 
-## Contribution / 기여
+---
 
-소스 수정사항이 있다면 Pull requests를 열어주세요.
-여러분들의 Contribution이 프로젝트 완성에 도움이 됩니다. 😘
-
-## License / 라이센스
-
-**Apache 2.0 License**가 적용되어 있습니다.
+즐거운 클래스카드 되세요!

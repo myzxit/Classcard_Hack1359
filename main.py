@@ -8,7 +8,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
-from utility import chd_wh, get_id, word_get, choice_class, choice_set, classcard_api_post
+from utility import chd_wh, word_get, choice_class, choice_set, classcard_api_post
 from learning_types import (
     memorization,
     recall,
@@ -40,7 +40,7 @@ time.sleep(2)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def main():
-    account = get_id()
+    # account = get_id()  # 삭제
     
     time_1 = round(random.uniform(0.7, 1.3), 4)
     time_2 = round(random.uniform(1.7, 2.3), 4)

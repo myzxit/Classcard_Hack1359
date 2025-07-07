@@ -106,19 +106,6 @@ Fixed by Fixed by Sunduck HS Student
             quit()
     return nums
 
-def check_id(id, pw) -> bool:
-    print("계정 정보를 확인하고 있습니다... 잠시만 기다리세요!!")
-    headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
-    data = {"login_id": id, "login_pwd": pw}
-    res = requests.post(
-        "https://www.classcard.net/LoginProc", headers=headers, data=data
-    )
-    try:
-        status = res.json()
-        return status.get("result") == "ok"
-    except ValueError:
-        return False
-
 def choice_set(sets: dict) -> list[int]:
     clear_console()
     print("학습할 세트를 선택해주세요. (여러 개는 쉼표로 구분, 범위는 ~로, 전체는 'all')")
@@ -178,28 +165,6 @@ def choice_class(class_dict: dict) -> int:
     os.system("cls")
     print(f"{class_dict[ch_c-1].get('class_name')}를 선택하셨습니다.")
     return ch_c - 1
-
-def save_id() -> dict:
-    while True:
-        id = input("아이디를 입력하세요 : ")
-        password = input("비밀번호를 입력하세요 : ")
-        if check_id(id, password):
-            data = {"id": id, "pw": password}
-            with open("config.json", "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=4)
-            print("아이디 비밀번호가 저장되었습니다.\n")
-            return data
-        else:
-            print("아이디 또는 비밀번호가 잘못되었습니다.\n")
-            continue
-
-def get_id():
-    try:
-        with open("config.json", "r", encoding="utf-8") as f:
-            json_data = json.load(f)
-            return json_data
-    except (FileNotFoundError, json.JSONDecodeError):
-        return save_id()
 
 def classcard_api_post(
     user_id: int,
