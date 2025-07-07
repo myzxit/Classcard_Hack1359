@@ -1,6 +1,7 @@
 # main.py
 
 import time
+from turtle import clear
 import warnings
 import random
 
@@ -8,7 +9,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
-from utility import chd_wh, word_get, choice_class, choice_set, classcard_api_post
+from utility import chd_wh, clear_console, word_get, choice_class, choice_set, classcard_api_post
 from learning_types import (
     memorization,
     recall,
@@ -19,6 +20,20 @@ from learning_types import (
     quiz_battle
 )
 
+a = input(
+    """
+    ---------------------------------------------이용 약관-----------------------------------------------
+    이 프로그램은 교육용 목적으로 만들어졌습니다. 절대 실제 수업에서의 사용을 금지합니다. 계속하시겠습니까? (y/n): 
+    ----------------------------------------------------------------------------------------------------
+    """
+    )
+
+if a == "n":
+    print("프로그램을 종료합니다.")
+    quit()
+
+clear_console()
+
 print(
         """
 
@@ -27,15 +42,26 @@ print(
         -----------------------------------
 
         Developed by NellLucas(서재형)
-        Fixed by Sunduck HS Student
+        Fixed by SD HS Student
 
-        몇가지 오류 메세지가 떠도 무시하세요
+        몇가지 오류 메세지, 로그가 떠도 무시하세요
         작동만 되면 되잖아요 ㅎㅎ
 
         """
 )
 
 time.sleep(2)
+
+print("""
+    곧 크롬 창이 하나 뜰겁니다.
+    클래스카드 로그인 페이지로 이동합니다.
+    로그인 버튼까지 누른 후 이 창으로 돌아와서 엔터를 눌러주세요.
+    로그인 후에는 아무것도 건들지 말아주세요.
+    프로그램이 자동으로 웹사이트를 조작합니다.
+
+    """)
+
+time.sleep(3)
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -52,18 +78,6 @@ def main():
     driver = webdriver.Chrome(options=options)
 
     try:
-
-        print("""
-        곧 크롬 창이 하나 뜰겁니다.
-        클래스카드 로그인 페이지로 이동합니다.
-        로그인 버튼까지 누른 후 이 창으로 돌아와서 엔터를 눌러주세요.
-        로그인 후에는 아무것도 건들지 말아주세요.
-        프로그램이 자동으로 웹사이트를 조작합니다.
-
-        
-        """)
-        
-        time.sleep(0)
 
         # 로그인
         driver.get("https://www.classcard.net/Login")

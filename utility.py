@@ -88,7 +88,7 @@ def chd_wh() -> list[int]:
 [10] 매칭게임(매크로)(작동 보장 X)
 ---------------------------
 Developed by NellLucas(서재형)
-Fixed by Fixed by Sunduck HS Student
+Fixed by Fixed by SD HS Student
     """
     )
     while True:
