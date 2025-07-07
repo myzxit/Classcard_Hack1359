@@ -1,5 +1,6 @@
 # learning_types/spelling.py
 import time
+import re
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
@@ -14,6 +15,9 @@ def run_spelling(driver, num_d, da_e, da_k):
             cash_d = driver.find_element(By.XPATH,
                                          f"//*[@id='wrapper-learn']/div/div/div[2]/div[2]/div[{i}]/div[1]/div/div/div/div[1]/span[1]"
                                          ).text
+            cash_d_clean = re.sub(r'[;,\s]+', '', cash_d)
+            da_e_clean = [re.sub(r'[;,\s]+', '', e) for e in da_e]
+            da_k_clean = [re.sub(r'[;,\s]+', '', k) for k in da_k]
             if cash_d.upper() != cash_d.lower():
                 try:
                     text = da_k[da_e.index(cash_d)]

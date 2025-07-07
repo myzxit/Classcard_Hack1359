@@ -2,6 +2,7 @@
 import time
 from selenium.webdriver.common.by import By
 import random
+import re
 
 def run_recall(driver, num_d, da_e, da_kyn, time_2):
     print("리콜학습을 시작합니다...")
@@ -15,9 +16,7 @@ def run_recall(driver, num_d, da_e, da_kyn, time_2):
             cash_d = driver.find_element(By.XPATH,
                                          f"//*[@id='wrapper-learn']/div/div/div[2]/div[2]/div[{i}]/div[1]/div/div/div/div[1]/span"
                                          ).text
-
-            cash_dby = [0, 0, 0]
-
+            cash_dby = ["", "", ""]
             for j in range(0, 3):
                 cash_dby[j] = driver.find_element(By.XPATH,
                                                   f"//*[@id='wrapper-learn']/div/div/div[2]/div[2]/div[{i}]/div[3]/div[{j + 1}]/div[2]/div"
