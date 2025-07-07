@@ -1,4 +1,5 @@
 # main.py
+
 import time
 import warnings
 import random
@@ -18,6 +19,24 @@ from learning_types import (
     quiz_battle
 )
 
+print(
+        """
+
+        -----------------------------------
+        Classcard Hack v3.1.0
+        -----------------------------------
+
+        Developed by NellLucas(서재형)
+        Fixed by Sunduck HS Student
+
+        몇가지 오류 메세지가 떠도 무시하세요
+        작동만 되면 되잖아요 ㅎㅎ
+
+        """
+)
+
+time.sleep(2)
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def main():
@@ -33,18 +52,23 @@ def main():
     driver = webdriver.Chrome(options=options)
 
     try:
+
+        print("""
+        곧 크롬 창이 하나 뜰겁니다.
+        클래스카드 로그인 페이지로 이동합니다.
+        로그인 버튼까지 누른 후 이 창으로 돌아와서 엔터를 눌러주세요.
+        로그인 후에는 아무것도 건들지 말아주세요.
+        프로그램이 자동으로 웹사이트를 조작합니다.
+
+        
+        """)
+        
+        time.sleep(0)
+
         # 로그인
         driver.get("https://www.classcard.net/Login")
-        tag_id = driver.find_element(By.ID, "login_id")
-        tag_pw = driver.find_element(By.ID, "login_pwd")
-        tag_id.clear()
-        tag_id.send_keys(account["id"])
-        tag_pw.send_keys(account["pw"])
-        driver.find_element(By.CSS_SELECTOR,
-                            "#loginForm > div.checkbox.primary.text-primary.text-center.m-t-md > a"
-                            ).click()
 
-        time.sleep(1)  # 로그인이 늦어지는 경우를 대비
+        input("크롬 창에서 로그인을 완료한 후 엔터를 눌러주세요...")  # 로그인 수동 대기
 
         class_dict = {}
         class_list_element = driver.find_element(
@@ -68,111 +92,91 @@ def main():
         elif len(class_dict) == 1:
             choice_class_val = 0
         else:
-            choice_class_val = choice_class(class_dict=class_dict)  # 클래스 선택
-        class_id = class_dict[choice_class_val].get("class_id")  # 클래스 아이디 가져오기
+            choice_class_val = choice_class(class_dict=class_dict)
+        class_id = class_dict[choice_class_val].get("class_id")
 
-        driver.get(f"https://www.classcard.net/ClassMain/{class_id}")  # 클래스 페이지로 이동
+        driver.get(f"https://www.classcard.net/ClassMain/{class_id}")
+        time.sleep(1)
 
-        time.sleep(1)  # 로딩 대기
-
-        sets_list = []
         sets_div = driver.find_element(
             By.XPATH, "/html/body/div[1]/div[2]/div/div/div[2]/div[3]/div"
         )
         sets = sets_div.find_elements(By.CLASS_NAME, "set-items")
         sets_dict = {}
         for set_item, i in zip(sets, range(len(sets))):
+            a_tag = set_item.find_element(By.TAG_NAME, "a")
             set_temp = {}
-            set_temp["card_num"] = (  # 카드 개수 가져오기(10 카드)
-                set_item.find_element(By.TAG_NAME, "a").find_element(By.TAG_NAME, "span").text
-            )
-            set_temp["title"] = set_item.find_element(By.TAG_NAME, "a").text.replace(
-                set_temp["card_num"], ""
-            )  # 카드 개수 제거
-            set_temp["set_id"] = set_item.find_element(By.TAG_NAME, "a").get_attribute(
-                "data-idx"
-            )  # 세트 아이디 가져오기
+            set_temp["card_num"] = a_tag.find_element(By.TAG_NAME, "span").text
+            set_temp["title"] = a_tag.text.replace(set_temp["card_num"], "")
+            set_temp["set_id"] = a_tag.get_attribute("data-idx")
             sets_dict[i] = set_temp
-        choice_set_val = choice_set(sets_dict)  # 세트 선택
 
-        set_site = (
-            f"https://www.classcard.net/set/{sets_dict[choice_set_val]['set_id']}/{class_id}"
-        )
+        choice_set_vals = choice_set(sets_dict)
+        ch_d_list = chd_wh()  # 여러 개 선택 가능
+        for ch_d in ch_d_list:
+            for choice_set_val in choice_set_vals:
+                set_site = (
+                    f"https://www.classcard.net/set/{sets_dict[choice_set_val]['set_id']}/{class_id}"
+                )
+                driver.get(set_site)
+                time.sleep(1)
 
-        driver.get(set_site)  # 세트 페이지로 이동
-        time.sleep(1)
+                user_id = int(driver.execute_script("return c_u;"))
 
-        user_id = int(driver.execute_script("return c_u;"))  # 유저 아이디 가져오기
+                driver.find_element(By.CSS_SELECTOR,
+                    "body > div.test > div.p-b-sm > div.set-body.m-t-25.m-b-lg > div.m-b-md > div > a"
+                ).click()
+                driver.find_element(By.CSS_SELECTOR,
+                    "body > div.test > div.p-b-sm > div.set-body.m-t-25.m-b-lg > div.m-b-md > div > ul > li:nth-child(1)"
+                ).click()
 
-        ch_d = chd_wh()  # 학습유형 선택
+                html = BeautifulSoup(driver.page_source, "html.parser")
+                cards_ele = html.find("div", class_="flip-body")
+                num_d = len(cards_ele.find_all("div", class_="flip-card")) + 1
 
-        driver.find_element(By.CSS_SELECTOR,
-                            "body > div.test > div.p-b-sm > div.set-body.m-t-25.m-b-lg > div.m-b-md > div > a"
-                            ).click()
-        driver.find_element(By.CSS_SELECTOR,
-                            "body > div.test > div.p-b-sm > div.set-body.m-t-25.m-b-lg > div.m-b-md > div > ul > li:nth-child(1)"
-                            ).click()
+                time.sleep(0.5)
 
-        html = BeautifulSoup(driver.page_source, "html.parser")  # 페이지 소스를 html로 파싱
-        cards_ele = html.find("div", class_="flip-body")  # 카드들을 찾음
-        num_d = len(cards_ele.find_all("div", class_="flip-card")) + 1  # 카드의 개수를 구함
+                word_d = word_get(driver, num_d)
+                da_e, da_k, da_kn, da_kyn, da_ked, da_sd, da_e_clean, da_k_clean = word_d
 
-        time.sleep(0.5)  # 로딩 대기
-        
-        word_d = word_get(driver, num_d) # 단어 데이터 수집
-        da_e, da_k, da_kn, da_kyn, da_ked, da_sd = word_d
+                print(f"\n====== '{sets_dict[choice_set_val]['title']}' 세트 학습 시작 ======\n")
 
-        # 학습 유형 선택
-        if ch_d == 1:
-            print("암기학습 API 요청 변조를 시작합니다.")
-            classcard_api_post(
-                user_id=user_id,
-                set_id=sets_dict[choice_set_val]["set_id"],
-                class_id=class_id,
-                view_cnt=num_d,
-                activity=1,
-            )
-        elif ch_d == 2:
-            print("리콜학습 API 요청 변조를 시작합니다.")
-            classcard_api_post(
-                user_id=user_id,
-                set_id=sets_dict[choice_set_val]["set_id"],
-                class_id=class_id,
-                view_cnt=num_d,
-                activity=2,
-            )
-        elif ch_d == 3:
-            print("스펠학습 API 요청 변조를 시작합니다.")
-            classcard_api_post(
-                user_id=user_id,
-                set_id=sets_dict[choice_set_val]["set_id"],
-                class_id=class_id,
-                view_cnt=num_d,
-                activity=3,
-            )
-        elif ch_d == 4:
-            match_site = (
-            f"https://www.classcard.net/Match/{sets_dict[choice_set_val]['set_id']}?c={class_id}"
-            )
-            driver.get(match_site)
-            matching_game_API.run_matching_game_api(driver, match_site)
-        elif ch_d == 5:
-            test.run_test(driver, num_d, da_e, da_k, da_kn, da_ked, time_1)
-        elif ch_d == 6:
-            quiz_battle.run_quiz_battle(driver, da_e, da_k, da_sd)
-        elif ch_d == 7:
-            memorization.run_memorization(driver, num_d)
-        elif ch_d == 8:
-            recall.run_recall(driver, num_d, da_e, da_kyn, time_2)
-        elif ch_d == 9:
-            spelling.run_spelling(driver, num_d, da_e, da_k)
-        elif ch_d == 10:
-            matching_game.run_matching_game(driver, da_e, da_k)
-        else:
-            print("프로그램을 종료합니다.")
+                if ch_d == 1:
+                    print("암기학습 API 요청 변조 시작")
+                    classcard_api_post(user_id, sets_dict[choice_set_val]["set_id"], class_id, num_d, activity=1)
+                elif ch_d == 2:
+                    print("리콜학습 API 요청 변조 시작")
+                    classcard_api_post(user_id, sets_dict[choice_set_val]["set_id"], class_id, num_d, activity=2)
+                elif ch_d == 3:
+                    print("스펠학습 API 요청 변조 시작")
+                    classcard_api_post(user_id, sets_dict[choice_set_val]["set_id"], class_id, num_d, activity=3)
+                elif ch_d == 4:
+                    match_site = f"https://www.classcard.net/Match/{sets_dict[choice_set_val]['set_id']}?c={class_id}"
+                    driver.get(match_site)
+                    matching_game_API.run_matching_game_api(driver, match_site)
+                elif ch_d == 5:
+                    test.run_test(driver, num_d, da_e, da_k, da_kn, da_ked, time_1, da_e_clean, da_k_clean)
+                elif ch_d == 6:
+                    quiz_battle.run_quiz_battle(driver, da_e, da_k, da_sd)
+                elif ch_d == 7:
+                    memorization.run_memorization(driver, num_d)
+                elif ch_d == 8:
+                    recall.run_recall(driver, num_d, da_e, da_kyn, time_2)
+                elif ch_d == 9:
+                    spelling.run_spelling(driver, num_d, da_e, da_k)
+                elif ch_d == 10:
+                    matching_game.run_matching_game(driver, da_e, da_k)
+                else:
+                    print("잘못된 학습 유형, 프로그램 종료")
+                    break
+
+                print(f"\n====== '{sets_dict[choice_set_val]['title']}' 세트 학습 완료 ======\n")
+                time.sleep(1)
+
+        print("\n✅ 모든 선택한 세트 학습이 완료되었습니다.")
 
     finally:
-        driver.quit() #웹드라이버 종료
+        driver.quit()
 
 if __name__ == "__main__":
     main()
