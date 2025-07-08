@@ -1,6 +1,7 @@
 # learning_types/test.py
 import time
 import random
+import re
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -27,7 +28,7 @@ def wait_for_element(driver, by, identifier, timeout=10):
         print(f"요소를 찾는 데 시간이 초과되었습니다: {identifier}")
         return None
 
-def run_test(driver, num_d, da_e, da_k, da_kn, da_ked, time_1):
+def run_test(driver, num_d, da_e, da_k, da_kn, da_ked, time_1, da_e_clean, da_k_clean):
     print("테스트학습을 시작합니다...")
 
     initial_steps = [
@@ -57,24 +58,23 @@ def run_test(driver, num_d, da_e, da_k, da_kn, da_ked, time_1):
             cash_d = driver.find_element(By.XPATH,
                                          f"//*[@id='testForm']/div[{i}]/div/div[1]/div[2]/div/div/div"
                                          ).text
-
+            cash_d_clean = re.sub(r'[;,\s]+', '', cash_d)
             element = driver.find_element(By.XPATH,
                                           f"//*[@id='testForm']/div[{i}]/div/div[1]/div[2]"
                                           )
             driver.execute_script("arguments[0].click();", element)
             time.sleep(0.5)
-
-            cash_dby = [0, 0, 0, 0, 0, 0]
+            cash_dby = ["", "", "", "", "", ""]
             for j in range(0, 6):
                 cash_dby[j] = driver.find_element(By.XPATH,
                                                   f"//*[@id='testForm']/div[{i}]/div/div[2]/div/div[1]/div[{j + 1}]/label/div/div"
                                                   ).text
-
+                cash_dby[j] = re.sub(r'[;,\s]+', '', cash_dby[j])
             notFindData = False
             if cash_d.upper() != cash_d.lower():
                 for j in range(0, 6):
                     try:
-                        if da_e.index(cash_d) == da_k.index(cash_dby[j]):
+                        if da_e_clean.index(cash_d_clean) == da_k_clean.index(cash_dby[j]):
                             element = driver.find_element(By.XPATH,
                                                           f"//*[@id='testForm']/div[{i}]/div/div[2]/div/div[1]/div[{j + 1}]/label/div/div"
                                                           )
@@ -83,7 +83,7 @@ def run_test(driver, num_d, da_e, da_k, da_kn, da_ked, time_1):
                             break
                     except:
                         try:
-                            if da_e.index(cash_d) == da_kn.index(cash_dby[j]):
+                            if da_e_clean.index(cash_d_clean) == da_kn.index(cash_dby[j]):
                                 element = driver.find_element(By.XPATH,
                                                             f"//*[@id='testForm']/div[{i}]/div/div[2]/div/div[1]/div[{j + 1}]/label/div/div"
                                                             )
@@ -91,18 +91,17 @@ def run_test(driver, num_d, da_e, da_k, da_kn, da_ked, time_1):
                                 notFindData = True
                                 break
                         except:
-                            if da_e.index(cash_d) == da_ked.index(cash_dby[j]):
+                            if da_e_clean.index(cash_d_clean) == da_ked.index(cash_dby[j]):
                                 element = driver.find_element(By.XPATH,
                                                             f"//*[@id='testForm']/div[{i}]/div/div[2]/div/div[1]/div[{j + 1}]/label/div/div"
                                                             )
                                 driver.execute_script("arguments[0].click();", element)
                                 notFindData = True
                                 break
-
             else:
                 for j in range(0, 6):
                     try:
-                        if da_k.index(cash_d) == da_e.index(cash_dby[j]):
+                        if da_k_clean.index(cash_d_clean) == da_e_clean.index(cash_dby[j]):
                             element = driver.find_element(By.XPATH,
                                                           f"//*[@id='testForm']/div[{i}]/div/div[2]/div/div[1]/div[{j + 1}]/label/div/div"
                                                           )
@@ -111,7 +110,7 @@ def run_test(driver, num_d, da_e, da_k, da_kn, da_ked, time_1):
                             break
                     except:
                         try:
-                            if da_kn.index(cash_d) == da_e.index(cash_dby[j]):
+                            if da_kn.index(cash_d_clean) == da_e_clean.index(cash_dby[j]):
                                 element = driver.find_element(By.XPATH,
                                                             f"//*[@id='testForm']/div[{i}]/div/div[2]/div/div[1]/div[{j + 1}]/label/div/div"
                                                             )
@@ -119,14 +118,13 @@ def run_test(driver, num_d, da_e, da_k, da_kn, da_ked, time_1):
                                 notFindData = True
                                 break
                         except:
-                            if da_ked.index(cash_d) == da_e.index(cash_dby[j]):
+                            if da_ked.index(cash_d_clean) == da_e_clean.index(cash_dby[j]):
                                 element = driver.find_element(By.XPATH,
                                                             f"//*[@id='testForm']/div[{i}]/div/div[2]/div/div[1]/div[{j + 1}]/label/div/div"
                                                             )
                                 driver.execute_script("arguments[0].click();", element)
                                 notFindData = True
                                 break
-
             if notFindData != True:
                 print("\nDetected Missing Words!!, Randomly Selected\n")
                 driver.find_element(By.XPATH,

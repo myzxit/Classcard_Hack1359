@@ -7,6 +7,9 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 import requests
 
+def clear_console():
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
 def word_get(driver, num_d) -> list:
     da_e, da_k, da_kn, da_kyn, da_ked, da_sd = [[""] * num_d for _ in range(6)]
 
@@ -14,7 +17,10 @@ def word_get(driver, num_d) -> list:
         da_e[i] = driver.find_element(By.XPATH,
             f"//*[@id='tab_set_all']/div[2]/div[{i}]/div[4]/div[1]/div[1]/div/div"
         ).text
-    
+        # 원본 그대로 저장 (구분자/공백 제거하지 않음)
+
+    # print("[DEBUG] 저장된 영어 단어 리스트:", da_e)
+
     try:
         for i in range(1, num_d):
             url = driver.find_element(By.XPATH, f"//*[@id='tab_set_all']/div[2]/div[{i}]/div[4]/div[1]/div[3]/a").get_attribute('data-src')
@@ -36,7 +42,6 @@ def word_get(driver, num_d) -> list:
             f"//*[@id='tab_set_all']/div[2]/div[{i}]/div[4]/div[2]/div[1]/div/div"
         ).text
         ko_d = ko_d.split("\n")
-        
         #명. 동. 형. 부. 와 같은 품사 표기 제거(options)
         POS_MARKERS = ['명', '동', '형', '부'] 
         pattern = r'\b(?:' + '|'.join(POS_MARKERS) + r')\.\s*'
@@ -53,75 +58,92 @@ def word_get(driver, num_d) -> list:
             da_kyn[i] = " ".join(ko_d)
             da_ked[i] = ", ".join(edit_ko_d)
 
-    return [da_e, da_k, da_kn, da_kyn, da_ked, da_sd]
+    da_e_clean = [re.sub(r'[;,	\s]+', '', e) for e in da_e]  # 혹시 남아있으면
+    da_e_clean = [re.sub(r'[;,\s]+', '', e) for e in da_e]  # 최종적으로 nul문자 없이
+    da_k_clean = [re.sub(r'[;,\s]+', '', k) for k in da_k]
+    # ...
+    # print("[DEBUG] 저장된 영어 단어 리스트:", da_e)
+    # print("[DEBUG] 저장된 한글 뜻 리스트:", da_k)
+    # print("[DEBUG] 테스트용 영어 단어 리스트:", da_e_clean)
+    # print("[DEBUG] 테스트용 한글 뜻 리스트:", da_k_clean)
+    return [da_e, da_k, da_kn, da_kyn, da_ked, da_sd, da_e_clean, da_k_clean]
 
-def chd_wh() -> int:
+def chd_wh() -> list[int]:
     print(
         """
+주의사항: 능률보카 단어장으로만 테스트되었습니다.
+가끔가다가 중간에 몇개씩 틀릴수도 있는데 그냥 넘어가주세요.
+(저도 이유를 모르거든요 ㅎ)
+---------------------------
 학습 유형을 선택해주세요!!
-[1] 암기학습(API 요청 변조)
-[2] 리콜학습(API 요청 변조)
-[3] 스펠학습(API 요청 변조)
-[4] 매칭게임(API 요청 변조)
+[1] 암기학습(API 요청 변조)(작동 보장 X)
+[2] 리콜학습(API 요청 변조)(작동 보장 X)
+[3] 스펠학습(API 요청 변조)(작동 보장 X)
+[4] 매칭게임(API 요청 변조)(작동 보장 X)
 [5] 테스트학습(매크로)
-[6] QuizBattle(매크로)
-[7] 암기학습(매크로)
+[6] QuizBattle(매크로)(작동 보장 X)
+[7] 암기학습(매크로)(작동 보장 X)
 [8] 리콜학습(매크로)
 [9] 스펠학습(매크로)
-[10] 매칭게임(매크로)
+[10] 매칭게임(매크로)(작동 보장 X)
 ---------------------------
 Developed by NellLucas(서재형)
+Fixed by Fixed by SD HS Student
     """
     )
     while True:
         try:
-            ch_d = int(input(">>> "))
-            if 1 <= ch_d <= 10:
+            ch_s = input("학습 유형 번호를 선택하세요 (여러 개는 콤마로 구분, 예: 8,9,5): ").strip()
+            nums = [int(part.strip()) for part in ch_s.split(",")]
+            if all(1 <= n <= 10 for n in nums):
                 break
             else:
                 raise ValueError
         except ValueError:
-            print("올바른 학습 유형(1~10)을 선택해주세요.")
+            print("올바른 학습 유형(1~10)을 콤마로 구분해서 입력해주세요. 예: 8,9,5")
         except KeyboardInterrupt:
             print("\n사용자에 의해 종료되었습니다.")
             quit()
-    return ch_d
+    return nums
 
-def check_id(id, pw) -> bool:
-    print("계정 정보를 확인하고 있습니다... 잠시만 기다리세요!!")
-    headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
-    data = {"login_id": id, "login_pwd": pw}
-    res = requests.post(
-        "https://www.classcard.net/LoginProc", headers=headers, data=data
-    )
-    try:
-        status = res.json()
-        return status.get("result") == "ok"
-    except ValueError:
-        return False
-
-def choice_set(sets: dict) -> int:
-    os.system("cls")
-    print("학습할 세트를 선택해주세요.")
+def choice_set(sets: dict) -> list[int]:
+    clear_console()
+    print("학습할 세트를 선택해주세요. (여러 개는 쉼표로 구분, 범위는 ~로, 전체는 'all')")
+    print("예: 1,3~5,7  또는  all")
     print("Ctrl + C 를 눌러 종료")
-    for set_item in sets:
-        print(
-            f"[{set_item+1}] {sets[set_item].get('title')} | {sets[set_item].get('card_num')}"
-        )
+    for idx, set_item in sets.items():
+        print(f"[{idx+1}] {set_item.get('title')} | {set_item.get('card_num')}")
     while True:
         try:
-            ch_s = int(input(">>> "))
-            if ch_s >= 1 and ch_s <= len(sets):
+            ch_s = input(">>> ").strip().lower()
+            if ch_s == "all":
+                selected = list(range(len(sets)))
                 break
             else:
-                raise ValueError
+                nums = []
+                for part in ch_s.split(","):
+                    part = part.strip()
+                    if "~" in part:
+                        start, end = part.split("~")
+                        start, end = int(start), int(end)
+                        if start > end:
+                            raise ValueError
+                        nums.extend(list(range(start, end+1)))
+                    else:
+                        nums.append(int(part))
+                if all(1 <= n <= len(sets) for n in nums):
+                    selected = sorted(set(n - 1 for n in nums))
+                    break
+                else:
+                    raise ValueError
         except ValueError:
-            print("세트를 다시 입력해주세요.")
+            print("세트 번호를 올바르게 입력해주세요. 예: 1,3~5,7 또는 all")
         except KeyboardInterrupt:
             quit()
-    os.system("cls")
-    print(f"{sets[ch_s-1].get('title')}를 선택하셨습니다.")
-    return ch_s - 1
+    clear_console()
+    selected_names = ", ".join([sets[n].get("title") for n in selected])
+    print(f"선택한 세트: {selected_names}")
+    return selected
 
 def choice_class(class_dict: dict) -> int:
     os.system("cls")
@@ -143,28 +165,6 @@ def choice_class(class_dict: dict) -> int:
     os.system("cls")
     print(f"{class_dict[ch_c-1].get('class_name')}를 선택하셨습니다.")
     return ch_c - 1
-
-def save_id() -> dict:
-    while True:
-        id = input("아이디를 입력하세요 : ")
-        password = input("비밀번호를 입력하세요 : ")
-        if check_id(id, password):
-            data = {"id": id, "pw": password}
-            with open("config.json", "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=4)
-            print("아이디 비밀번호가 저장되었습니다.\n")
-            return data
-        else:
-            print("아이디 또는 비밀번호가 잘못되었습니다.\n")
-            continue
-
-def get_id():
-    try:
-        with open("config.json", "r", encoding="utf-8") as f:
-            json_data = json.load(f)
-            return json_data
-    except (FileNotFoundError, json.JSONDecodeError):
-        return save_id()
 
 def classcard_api_post(
     user_id: int,

@@ -1,51 +1,86 @@
-# Classcard-Hack
-![dependencies](https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white)![dependencies2](https://img.shields.io/badge/selenium-43B02A?style=for-the-badge&logo=selenium&logoColor=white) ![last commit](https://img.shields.io/github/last-commit/NellLucas/classcard_hack/main?color=red&style=for-the-badge) ![license](https://img.shields.io/github/license/NellLucas/classcard_hack?style=for-the-badge)
-> ✨ Selenium을 활용한 Classcard 학습 자동화 핵입니다.
-## 시연영상
-https://user-images.githubusercontent.com/114709497/210046306-8f532d47-3226-4731-841a-382440e74290.mp4
+# Classcard Hack 사용법 (한글 안내)
 
-## Features / 지원하는 기능들
-- 암기학습(API 변조, 매크로)
-- 리콜학습(API 변조, 매크로)
-- 스펠학습(API 변조, 매크로)
-- 매칭게임(API 변조, 매크로)
-- 테스트학습(매크로)
-- QuizBattle(매크로)
+## 소개
+이 프로젝트는 Classcard(클래스카드) 웹사이트에서 다양한 학습 유형(암기, 리콜, 스펠, 테스트 등)을 자동화/매크로/API 변조 방식으로 빠르게 학습할 수 있도록 도와주는 도구입니다.
 
+> ⚠️ 본 프로그램은 교육/연구/개인 실험 목적으로만 사용하세요. 실제 수업/평가/공식 학습에 악용하지 마세요.
 
-## Getting Started / 어떻게 시작하나요?
+---
 
-### Prerequisites / 선행 조건
+## 주요 기능
+- 다양한 학습 유형 자동화 (암기, 리콜, 스펠, 매칭, 테스트, 퀴즈배틀 등)
+- 여러 세트, 여러 학습 유형을 한 번에 선택하여 순차적으로 학습
+- 학습 완료 후 추가 세트 반복 학습 가능
+- 자동 로그인(config.json에서 id/pw 읽음, 없으면 최초 1회 입력)
+- 실행 시 로그/경고 최소화(DevTools 메시지는 무시)
+- API 변조를 통한 빠른 학습 처리(일부 유형)
+- 매크로 방식의 실제 자동 클릭/입력 지원
 
-아래 사항들이 설치가 되어있어야합니다.
+---
 
-```
-Chrome, Python3
-```
+## 준비물
 
-### Installing / 설치
+### 1. 추천 (exe 파일로 실행)
+- main.exe (깃허브 Releases 또는 배포 링크에서 다운로드)
+- Chrome 브라우저
+- **Python, pip, 패키지 설치 불필요!**
 
-아래 사항들로 현 프로젝트에 관한 모듈들을 설치할 수 있습니다.
+### 2. 수동 (파이썬 소스 직접 실행)
+- Python 3.8 이상 (테스트: Python 3.13)
+- Windows 11 24H2 (테스트 환경)
+- Chrome 브라우저
+- pip 패키지 설치: selenium, beautifulsoup4, requests 등
+- requirements.txt로 패키지 설치 필요
 
-```
-pip install -r requirements.txt
-```
+---
 
-### How to use? / 사용 방법
+## 실행 방법
 
-```
-ID 및 PW 입력 후, 자동화하고자 하는 학습 유형을 선택하시면 됩니다.
-```
+### 1. exe 파일로 실행 (추천)
+1. 깃허브 Releases에서 `main.exe` 파일을 다운로드합니다.
+2. 프로그램 폴더에 `config.json` 파일이 없으면, 첫 실행 시 아이디/비밀번호를 입력하면 자동 생성됩니다.
+   - 만약 처음에 id/pw를 잘못 입력했다면 config.json 파일을 직접 수정해주세요.
+3. `main.exe`를 더블클릭하여 실행합니다.
+4. 이후 안내에 따라 학습할 클래스, 세트, 학습 유형을 선택하면 자동으로 진행됩니다.
+5. 모든 세트 학습이 끝나면 "다른 세트도 학습하시겠습니까? (y/n)" 안내가 나오고, y를 입력하면 반복, n을 입력하면 종료됩니다.
 
-## Issues / 이슈
+### 2. 파이썬 소스 직접 실행 (수동)
+1. 터미널(명령 프롬프트)에서 프로젝트 폴더로 이동합니다.
+2. 아래 명령어로 실행합니다.
+   ```bash
+   python main.py
+   ```
+3. **최초 실행 시** 아이디/비밀번호를 입력하면 config.json이 자동 생성됩니다. (이후 자동 로그인)
+4. 로그인 후, 학습할 **클래스**와 **세트**를 선택합니다.
+   - 여러 세트는 `1,3,5`처럼 콤마로 구분해 입력
+   - 전체는 `all` 입력
+5. 학습 유형을 선택합니다.
+   - 여러 유형을 `8,9,5`처럼 콤마로 구분해 입력 (입력한 순서대로 실행)
+   - 예: `8,9,5` → 리콜, 스펠, 테스트 순서로 실행
+6. 모든 세트 학습이 끝나면 "다른 세트도 학습하시겠습니까? (y/n)" 안내가 나오고, y를 입력하면 반복, n을 입력하면 종료됩니다.
 
-동작에 문제가 있다면 사용환경과 오류코드를 꼭 남겨주세요.
+---
 
-## Contribution / 기여
+## 주의사항 및 팁
+- **능률보카 단어장** 기준으로 테스트되었습니다. 다른 단어장은 정상 동작을 보장하지 않습니다.
+- 리콜, 스펠, 테스트 학습의 매크로 방식만 정상작동을 보장합니다. 다른 학습 방법들은 테스트되지 않았습니다.
+- 가끔 중간에 몇 개씩 틀릴 수 있습니다. (프로그램/사이트 구조 변경, 버그 등)
+- 로그인은 자동으로 진행되며, config.json이 없으면 최초 1회만 입력 필요합니다.
+- 만약 처음에 id/pw를 잘못 입력했다면 config.json 파일을 직접 수정해주세요.
+- 프로그램 사용 중 오류가 발생하면 터미널 메시지를 참고하세요.
+- 만약 실행이 제대로 안된다면 크롬드라이버 버전 문제일 수 있습니다. 직접 해결하세요.
+- DevTools 메시지 등 일부 로그는 무시해도 됩니다.
+- 본 프로그램은 공식 Classcard와 무관하며, 모든 책임은 사용자에게 있습니다.
 
-소스 수정사항이 있다면 Pull requests를 열어주세요.
-여러분들의 Contribution이 프로젝트 완성에 도움이 됩니다. 😘
+---
 
-## License / 라이센스
+## 테스트 환경
+- Windows 11 24H2
+- Python 3.13
 
-**Apache 2.0 License**가 적용되어 있습니다.
+---
+
+## 라이선스 (Apache 2.0)
+이 프로젝트는 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 하에 배포됩니다.
+
+즐거운 클래스카드 되세요!
