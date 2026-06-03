@@ -33,37 +33,63 @@ pip install -r requirements.txt
 
 ### How to use? / 사용 방법
 
-```
+#### 1) 터미널에서 실행 준비
+```bash
+cd /workspaces/Classcard_Hack1359
 pip install -r requirements.txt
 ```
 
-#### 1) 컴퓨터용 실행
+> 권장: 가상환경을 사용한다면 아래처럼 실행합니다.
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
+
+#### 2) 컴퓨터용 실행
+```bash
 python main.py --login-mode auto --device desktop
 ```
-또는
-```
+
+또는 바로 실행 파일을 사용할 수 있습니다.
+```bash
 python main_desktop.py
 ```
 
-#### 2) 핸드폰용 실행
-```
+#### 3) 핸드폰용 실행
+```bash
 python main.py --login-mode auto --device mobile
 ```
-또는
-```
+
+또는 바로 실행 파일을 사용할 수 있습니다.
+```bash
 python main_mobile.py
 ```
 
-#### 3) 확장프로그램 실행
+#### 4) 로그인 모드 선택
+- 자동 로그인:
+```bash
+python main.py --login-mode auto --device desktop
+```
+- 수동 로그인:
+```bash
+python main.py --login-mode manual --device desktop
+```
+
+수동 로그인 모드에서는 브라우저 창이 열리고 직접 Classcard에 로그인할 수 있습니다.
+
+#### 5) 확장프로그램 실행
 1. Chrome에서 `chrome://extensions`를 엽니다.
 2. `압축해제된 확장 프로그램 로드`를 클릭합니다.
 3. `extension/classcard_helper` 폴더를 선택합니다.
 
+확장프로그램은 Classcard 페이지를 빠르게 여는 보조 도구로 사용합니다.
+
+#### 옵션 설명
 - `--login-mode auto`: 저장된 계정으로 자동 로그인
 - `--login-mode manual`: 브라우저에서 직접 로그인
-- `--device desktop`: 컴퓨터용 실행
-- `--device mobile`: 핸드폰 에뮬레이션 실행
+- `--device desktop`: 컴퓨터용 화면 크기
+- `--device mobile`: 핸드폰 에뮬레이션 화면 크기
 
 ### 바로 실행 파일
 - `python main_desktop.py`: 데스크톱 실행
