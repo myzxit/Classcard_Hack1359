@@ -17,29 +17,40 @@ def run_matching_game(driver, da_e, da_k):
     while True:
         try:
             html = BeautifulSoup(driver.page_source, "html.parser")
+            match_body = html.find("div", class_="match-body")
+            if not match_body:
+                raise NoSuchElementException
 
-            unsorted_cards = dict()
-            cards = html.find("div", class_="match-body").get_text(strip=True)
-
+            cards = match_body.get_text(strip=True)
             if past_cards == cards:
-                raise NotImplementedError
+                time.sleep(0.5)
+                continue
+
+            unsorted_cards = {}
             for i in range(4):
                 left_card = html.find("div", id=f"left_card_{i}")
-                score = int(
-                    left_card.find("span", class_="card-score").get_text(strip=True)
-                )
-                left_card.find("span", class_="card-score").decompose()
+                if not left_card:
+                    continue
+                score_tag = left_card.find("span", class_="card-score")
+                score = int(score_tag.get_text(strip=True)) if score_tag else i
+                if score_tag:
+                    score_tag.decompose()
                 question = left_card.get_text(strip=True)
                 unsorted_cards[f"{question}_{i}"] = score
 
             sorted_lists = sorted(unsorted_cards.items(), key=lambda item: item[1])
-
+            matched = False
             for k, _ in sorted_lists:
                 word, order = k.split("_")
+                if word not in da_e:
+                    continue
                 answer = da_k[da_e.index(word)]
 
                 for j in range(4):
-                    right_card = html.find("div", id=f"right_card_{j}").get_text(strip=True)
+                    right_card_tag = html.find("div", id=f"right_card_{j}")
+                    if not right_card_tag:
+                        continue
+                    right_card = right_card_tag.get_text(strip=True)
                     if right_card == answer:
                         left_element = driver.find_element(By.ID, f"left_card_{order}")
                         right_element = driver.find_element(By.ID, f"right_card_{j}")
@@ -52,20 +63,26 @@ def run_matching_game(driver, da_e, da_k):
                             action.click(on_element=right_element)
                             action.perform()
                             action.reset_actions()
-                        raise NotImplementedError
-                    else:
-                        continue
-        except NotImplementedError:
-            try:
-                if driver.find_element(By.CLASS_NAME, "rank-info").size["height"] > 0:
-                    print("매칭게임이 완료되었습니다.")
-                    driver.find_element(By.CSS_SELECTOR, ".btn-default").click()
-                    time.sleep(1)
+                        matched = True
+                        break
+                if matched:
                     break
-                else:
-                    past_cards = cards
-            except NoSuchElementException:
+
+            if matched:
+                try:
+                    rank_info = driver.find_element(By.CLASS_NAME, "rank-info")
+                    if rank_info.size["height"] > 0:
+                        print("매칭게임이 완료되었습니다.")
+                        driver.find_element(By.CSS_SELECTOR, ".btn-default").click()
+                        time.sleep(1)
+                        break
+                except NoSuchElementException:
+                    pass
                 past_cards = cards
+            else:
+                time.sleep(0.5)
+        except NoSuchElementException:
+            time.sleep(0.5)
         except KeyboardInterrupt:
             print("\n사용자에 의해 종료되었습니다.")
             break

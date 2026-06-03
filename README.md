@@ -34,8 +34,48 @@ pip install -r requirements.txt
 ### How to use? / 사용 방법
 
 ```
-ID 및 PW 입력 후, 자동화하고자 하는 학습 유형을 선택하시면 됩니다.
+pip install -r requirements.txt
 ```
+
+#### 1) 컴퓨터용 실행
+```
+python main.py --login-mode auto --device desktop
+```
+또는
+```
+python main_desktop.py
+```
+
+#### 2) 핸드폰용 실행
+```
+python main.py --login-mode auto --device mobile
+```
+또는
+```
+python main_mobile.py
+```
+
+#### 3) 확장프로그램 실행
+1. Chrome에서 `chrome://extensions`를 엽니다.
+2. `압축해제된 확장 프로그램 로드`를 클릭합니다.
+3. `extension/classcard_helper` 폴더를 선택합니다.
+
+- `--login-mode auto`: 저장된 계정으로 자동 로그인
+- `--login-mode manual`: 브라우저에서 직접 로그인
+- `--device desktop`: 컴퓨터용 실행
+- `--device mobile`: 핸드폰 에뮬레이션 실행
+
+### 바로 실행 파일
+- `python main_desktop.py`: 데스크톱 실행
+- `python main_mobile.py`: 모바일 에뮬레이션 실행
+
+## Browser Extension
+
+`extension/classcard_helper` 폴더는 Classcard 페이지를 빠르게 여는 Chrome 확장 프로그램입니다.
+
+1. Chrome에서 확장 프로그램 관리 페이지를 엽니다.
+2. `압축해제된 확장 프로그램 로드`를 선택합니다.
+3. `extension/classcard_helper` 폴더를 선택합니다.
 
 ## Issues / 이슈
 
