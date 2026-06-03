@@ -26,8 +26,8 @@ def run_quiz_battle(driver, da_e, da_k, da_sd):
                             "body > div.battle-wrapper > div.battle-table > div > div > div > div.battle-content.step-join > div.input-step1.text-center > div > div:nth-child(2) > div:nth-child(5) > button"
                             ).click()
     except NoSuchElementException:
-        print("Error entering Quiz Battle mode.")
-        pass
+        print("Quiz Battle 진입 요소를 찾을 수 없습니다. 페이지 구조가 변경되었을 수 있습니다.")
+        return
 
     element = WebDriverWait(driver, 100000).until(
         EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[3]/div/div/div/div[4]/div[3]/div[1]/div[2]/div/div/div[1]/div/div/div/div/div[1]"))

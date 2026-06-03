@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Classcard Automator Helper",
+  "version": "1.0",
+  "description": "Classcard 자동화 실행을 돕는 브라우저 확장 프로그램입니다.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "tabs"
+  ]
+}

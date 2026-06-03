@@ -1,13 +1,30 @@
 # main.py
+import argparse
 import time
 import warnings
 import random
+import re
 
 from selenium import webdriver
-from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
 
-from utility import chd_wh, get_id, word_get, choice_class, choice_set, classcard_api_post
+from utility import (
+    chd_wh,
+    choice_class,
+    choice_set,
+    classcard_api_post,
+    get_config,
+    save_config,
+    auto_login,
+    manual_login,
+    get_cookies,
+    clear_console,
+    word_get,
+)
 from learning_types import (
     memorization,
     recall,
@@ -15,145 +32,223 @@ from learning_types import (
     test,
     matching_game,
     matching_game_API,
-    quiz_battle
+    quiz_battle,
 )
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-def main():
-    account = get_id()
-    
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Classcard 자동화를 실행합니다. 로그인 모드와 디바이스 모드를 선택하세요."
+    )
+    parser.add_argument(
+        "--login-mode",
+        choices=["auto", "manual"],
+        help="로그인 방식: auto(자동 로그인), manual(수동 로그인)",
+    )
+    parser.add_argument(
+        "--device",
+        choices=["desktop", "mobile"],
+        help="실행 모드: desktop(PC), mobile(핸드폰 에뮬레이션)",
+    )
+    return parser.parse_args()
+
+
+def setup_driver(device_mode: str) -> webdriver.Chrome:
+    options = webdriver.ChromeOptions()
+    options.add_experimental_option("excludeSwitches", ["enable-logging"])
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--disable-notifications")
+    if device_mode == "mobile":
+        options.add_experimental_option(
+            "mobileEmulation", {"deviceName": "Pixel 2"}
+        )
+        options.add_argument("--window-size=412,914")
+    else:
+        options.add_argument("--window-size=1366,768")
+    return webdriver.Chrome(options=options)
+
+
+def collect_classes(driver):
+    class_dict = {}
+    anchors = driver.find_elements(
+        By.CSS_SELECTOR, "a[href*='/ClassMain/']"
+    )
+    for index, anchor in enumerate(anchors):
+        href = anchor.get_attribute("href") or ""
+        if "/ClassMain/" not in href:
+            continue
+        class_id = href.rstrip("/").split("/")[-1]
+        if class_id == "joinClass":
+            continue
+        class_dict[index] = {
+            "class_name": anchor.text.strip() or f"Class {index + 1}",
+            "class_id": class_id,
+        }
+    return class_dict
+
+
+def collect_sets(driver):
+    sets = []
+    links = driver.find_elements(By.CSS_SELECTOR, "a[data-idx], .set-items a")
+    for link in links:
+        set_id = link.get_attribute("data-idx") or ""
+        title = link.text.strip()
+        card_num = ""
+        match = re.search(r"(\d+)\s*개|\d+\s*카드|\d+", title)
+        if match:
+            card_num = match.group(0).strip()
+            title = title.replace(card_num, "").strip()
+        if not set_id:
+            href = link.get_attribute("href") or ""
+            if "/set/" in href:
+                set_id = href.rstrip("/").split("/")[-1]
+        if set_id:
+            sets.append({"title": title or f"Set {len(sets)+1}", "card_num": card_num, "set_id": set_id})
+    return sets
+
+
+def wait_for_cards(driver):
+    try:
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.flip-body, div.flip-card"))
+        )
+    except Exception:
+        pass
+
+
+def get_card_count(driver):
+    html = BeautifulSoup(driver.page_source, "html.parser")
+    cards_ele = html.find("div", class_="flip-body") or html.find("div", id="tab_set_all")
+    if cards_ele:
+        flip_cards = cards_ele.find_all("div", class_="flip-card")
+        if flip_cards:
+            return len(flip_cards) + 1
+    all_cards = html.find_all("div", class_="flip-card")
+    return len(all_cards) + 1 if all_cards else 0
+
+
+def login_to_classcard(driver, config):
+    if config["login_mode"] == "manual":
+        return manual_login(driver)
+    return auto_login(driver, config)
+
+
+def main(args=None):
+    config = get_config()
+    if args is None:
+        args = parse_args()
+    if args.login_mode:
+        config["login_mode"] = args.login_mode
+    if args.device:
+        config["device_mode"] = args.device
+    save_config(config)
+    if config["login_mode"] == "auto" and (not config.get("id") or not config.get("pw")):
+        config = get_config()
     time_1 = round(random.uniform(0.7, 1.3), 4)
     time_2 = round(random.uniform(1.7, 2.3), 4)
 
-    # 웹드라이버 초기화
-    options = webdriver.ChromeOptions()
-    options.add_experimental_option("excludeSwitches", ["enable-logging"])
-    options.add_argument('--disable-blink-features=AutomationControlled')
-    driver = webdriver.Chrome(options=options)
+    driver = setup_driver(config["device_mode"])
+    driver.implicitly_wait(10)
 
     try:
-        # 로그인
-        driver.get("https://www.classcard.net/Login")
-        tag_id = driver.find_element(By.ID, "login_id")
-        tag_pw = driver.find_element(By.ID, "login_pwd")
-        tag_id.clear()
-        tag_id.send_keys(account["id"])
-        tag_pw.send_keys(account["pw"])
-        driver.find_element(By.CSS_SELECTOR,
-                            "#loginForm > div.checkbox.primary.text-primary.text-center.m-t-md > a"
-                            ).click()
+        logged_in = login_to_classcard(driver, config)
+        if not logged_in:
+            print("로그인에 실패했습니다. 로그인 정보를 확인하거나 수동 로그인 모드를 사용해보세요.")
+            return
 
-        time.sleep(1)  # 로그인이 늦어지는 경우를 대비
+        class_dict = collect_classes(driver)
+        if not class_dict:
+            print("클래스 정보를 찾을 수 없습니다. 로그인 후 클래스 목록이 정상적으로 표시되는지 확인해주세요.")
+            return
 
-        class_dict = {}
-        class_list_element = driver.find_element(
-            By.CSS_SELECTOR,
-            "body > div.mw-1080 > div:nth-child(6) > div > div > div.left-menu > div.left-item-group.p-t-none.p-r-lg > div.m-t-sm.left-class-list",
-        )
-        for class_item, i in zip(
-            class_list_element.find_elements(By.TAG_NAME, "a"),
-            range(len(class_list_element.find_elements(By.TAG_NAME, "a"))),
-        ):
-            class_temp = {}
-            class_temp["class_name"] = class_item.text
-            class_temp["class_id"] = class_item.get_attribute("href").split("/")[-1]
-            if class_temp["class_id"] == "joinClass":
-                break
-            class_dict[i] = class_temp
-
-        if len(class_dict) == 0:
-            print("클래스가 없습니다.")
-            quit()
-        elif len(class_dict) == 1:
+        if len(class_dict) == 1:
             choice_class_val = 0
         else:
-            choice_class_val = choice_class(class_dict=class_dict)  # 클래스 선택
-        class_id = class_dict[choice_class_val].get("class_id")  # 클래스 아이디 가져오기
+            choice_class_val = choice_class(class_dict=class_dict)
 
-        driver.get(f"https://www.classcard.net/ClassMain/{class_id}")  # 클래스 페이지로 이동
+        class_id = class_dict[choice_class_val].get("class_id")
+        if not class_id:
+            print("클래스 ID를 가져오지 못했습니다.")
+            return
 
-        time.sleep(1)  # 로딩 대기
-
-        sets_list = []
-        sets_div = driver.find_element(
-            By.XPATH, "/html/body/div[1]/div[2]/div/div/div[2]/div[3]/div"
-        )
-        sets = sets_div.find_elements(By.CLASS_NAME, "set-items")
-        sets_dict = {}
-        for set_item, i in zip(sets, range(len(sets))):
-            set_temp = {}
-            set_temp["card_num"] = (  # 카드 개수 가져오기(10 카드)
-                set_item.find_element(By.TAG_NAME, "a").find_element(By.TAG_NAME, "span").text
-            )
-            set_temp["title"] = set_item.find_element(By.TAG_NAME, "a").text.replace(
-                set_temp["card_num"], ""
-            )  # 카드 개수 제거
-            set_temp["set_id"] = set_item.find_element(By.TAG_NAME, "a").get_attribute(
-                "data-idx"
-            )  # 세트 아이디 가져오기
-            sets_dict[i] = set_temp
-        choice_set_val = choice_set(sets_dict)  # 세트 선택
-
-        set_site = (
-            f"https://www.classcard.net/set/{sets_dict[choice_set_val]['set_id']}/{class_id}"
-        )
-
-        driver.get(set_site)  # 세트 페이지로 이동
+        driver.get(f"https://www.classcard.net/ClassMain/{class_id}")
         time.sleep(1)
 
-        user_id = int(driver.execute_script("return c_u;"))  # 유저 아이디 가져오기
+        sets = collect_sets(driver)
+        if not sets:
+            print("세트 목록을 찾을 수 없습니다. 페이지 구조가 변경되었을 수 있습니다.")
+            return
 
-        ch_d = chd_wh()  # 학습유형 선택
+        sets_dict = {i: s for i, s in enumerate(sets)}
+        choice_set_val = choice_set(sets_dict)
+        selected_set = sets_dict[choice_set_val]
 
-        driver.find_element(By.CSS_SELECTOR,
-                            "body > div.test > div.p-b-sm > div.set-body.m-t-25.m-b-lg > div.m-b-md > div > a"
-                            ).click()
-        driver.find_element(By.CSS_SELECTOR,
-                            "body > div.test > div.p-b-sm > div.set-body.m-t-25.m-b-lg > div.m-b-md > div > ul > li:nth-child(1)"
-                            ).click()
+        set_site = f"https://www.classcard.net/set/{selected_set['set_id']}/{class_id}"
+        driver.get(set_site)
+        time.sleep(1)
 
-        html = BeautifulSoup(driver.page_source, "html.parser")  # 페이지 소스를 html로 파싱
-        cards_ele = html.find("div", class_="flip-body")  # 카드들을 찾음
-        num_d = len(cards_ele.find_all("div", class_="flip-card")) + 1  # 카드의 개수를 구함
+        user_id = None
+        try:
+            user_id = int(driver.execute_script("return c_u;"))
+        except Exception:
+            pass
+        if user_id is None:
+            print("사용자 정보를 가져오지 못했습니다. 일부 API 변조 기능이 정상 동작하지 않을 수 있습니다.")
 
-        time.sleep(0.5)  # 로딩 대기
-        
-        word_d = word_get(driver, num_d) # 단어 데이터 수집
+        ch_d = chd_wh()
+
+        try:
+            driver.find_element(By.CSS_SELECTOR, "body > div.test > div.p-b-sm > div.set-body.m-t-25.m-b-lg > div.m-b-md > div > a").click()
+            driver.find_element(By.CSS_SELECTOR, "body > div.test > div.p-b-sm > div.set-body.m-t-25.m-b-lg > div.m-b-md > div > ul > li:nth-child(1)").click()
+        except Exception:
+            pass
+
+        wait_for_cards(driver)
+        num_d = get_card_count(driver)
+
+        word_d = None
+        try:
+            word_d = __import__("utility").word_get(driver, num_d)
+        except Exception as exc:
+            print("단어 데이터 수집 중 오류가 발생했습니다:", exc)
+            return
+
         da_e, da_k, da_kn, da_kyn, da_ked, da_sd = word_d
 
-        # 학습 유형 선택
         if ch_d == 1:
             print("암기학습 API 요청 변조를 시작합니다.")
             classcard_api_post(
                 user_id=user_id,
-                set_id=sets_dict[choice_set_val]["set_id"],
+                set_id=selected_set["set_id"],
                 class_id=class_id,
                 view_cnt=num_d,
                 activity=1,
+                cookies=get_cookies(driver),
             )
         elif ch_d == 2:
             print("리콜학습 API 요청 변조를 시작합니다.")
             classcard_api_post(
                 user_id=user_id,
-                set_id=sets_dict[choice_set_val]["set_id"],
+                set_id=selected_set["set_id"],
                 class_id=class_id,
                 view_cnt=num_d,
                 activity=2,
+                cookies=get_cookies(driver),
             )
         elif ch_d == 3:
             print("스펠학습 API 요청 변조를 시작합니다.")
             classcard_api_post(
                 user_id=user_id,
-                set_id=sets_dict[choice_set_val]["set_id"],
+                set_id=selected_set["set_id"],
                 class_id=class_id,
                 view_cnt=num_d,
                 activity=3,
+                cookies=get_cookies(driver),
             )
         elif ch_d == 4:
-            match_site = (
-            f"https://www.classcard.net/Match/{sets_dict[choice_set_val]['set_id']}?c={class_id}"
-            )
+            match_site = f"https://www.classcard.net/Match/{selected_set['set_id']}?c={class_id}"
             driver.get(match_site)
             matching_game_API.run_matching_game_api(driver, match_site)
         elif ch_d == 5:
@@ -172,7 +267,8 @@ def main():
             print("프로그램을 종료합니다.")
 
     finally:
-        driver.quit() #웹드라이버 종료
+        driver.quit()
+
 
 if __name__ == "__main__":
     main()
